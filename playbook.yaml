@@ -1,1 +1,54 @@
+---
+- name: Setting up containers
+  hosts: localhost
+  become: true
+  roles:
+    - geerlingguy.docker
+    - geerlingguy.pip
+    - geerlingguy.git
 
+  vars:
+    pip_package: python3-pip
+    pip_install_packages:
+      - name: docker
+
+  - name: Create traefik network
+    docker_network:
+      name: traefik_net
+
+  - name: Create container directory
+    file:
+      path: "{{item.path}}"
+      state: directory
+    with_items:
+      - {path: "/docker/traefik/"}
+
+  - name: Create traefik container
+    docker_container:
+      name: traefik
+      image: traefik:v2.3.1
+      state: started
+      recreate: yes
+      ports:
+        - "80:80"
+        - "443:443"
+        - "8080:8080"
+      networks:
+        - name: traefik_net
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+        - /docker/traefik/traefik.yml:/etc/traefik/traefik.yml
+        - /docker/traefik/letsencrypt:/letsencrypt
+        - /docker/traefik/logs:/logs
+      labels:
+        traefik.http.routers.traefik.tls=true
+        traefik.http.routers.traefik.rule=Host(`traefik.wiesefamily.io`)
+        traefik.http.routers.traefik.tls.certresolver=le
+        traefik.http.routers.traefik.tls.domains[0].main=wiesefamily.io
+        traefik.http.routers.traefik.tls.domains[0].sans=*.wiesefamily.io,wiesefamily.io
+        traefik.http.routers.traefik.entrypoints=web-secure
+        traefik.docker.network=traefik_net
+      env:
+        PUID: "1000"
+        PGID: "1000"
+        TZ: "America/Chicago"
