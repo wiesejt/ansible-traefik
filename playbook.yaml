@@ -1,6 +1,8 @@
 ---
 - name: Setting up containers
   hosts: localhost
+  vars:
+    HELLO_WORLD: "{{ lookup('env', 'HELLO_WORLD' }}"
   become: true
   roles:
     - geerlingguy.docker
@@ -52,5 +54,4 @@
         PUID: "1000"
         PGID: "1000"
         TZ: "America/Chicago"
-
-${{secrets.HELLO_WORLD}}
+        TEST: "{{ HELLO_WORLD }}"
