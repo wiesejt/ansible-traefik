@@ -34,3 +34,7 @@ jobs:
         run: |
           echo Add other actions to build,
           echo test, and deploy your project.
+
+      - name: Testing envs
+        env:
+            HELLO_WORLD: ${{ secrets.HELLO_WORLD }}
