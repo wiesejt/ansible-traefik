@@ -36,5 +36,6 @@ jobs:
           echo test, and deploy your project.
 
       - name: Testing envs
+      - uses: actions/checkout@v2
         env:
             HELLO_WORLD: ${{ secrets.HELLO_WORLD }}
